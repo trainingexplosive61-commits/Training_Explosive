@@ -38,7 +38,7 @@ const Fuerza = () => {
   const [musculo, setMusculo] = useState(null);
 
   return (
-    <div className="flex-1 p-10 bg-white overflow-y-auto">
+    <div className="flex-1 p-10 bg-white overflow-y-auto top-[335px]">
       <h1 className="text-3xl font-bold mb-2">Fuerza</h1>
       <p className="mb-4">
         Rango de repeticiones recomendado:{" "}

@@ -1,26 +1,29 @@
-import Header from './components/Header/Header'
-import './App.css'
-import NavBarClient from './components/NavBarClient/NavBarClient'
-import NavBarAdmin from './components/NavBarAdmin/NavBarAdmin'
-import { Outlet } from 'react-router-dom'
-import Footer from './components/Footer/Footer'
-import Login from './pages/Login/Login'
+import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
+import NavBarClient from "./components/NavBarClient/NavBarClient";
+import { Outlet } from "react-router-dom";
 
 function App() {
   return (
     <>
+    <div className="flex flex-col min-h-screen gap-0">
       <Header />
-      <div className="flex h-full">
+
+      {/* 🔹 Contenedor principal con margen a la izquierda */}
+      <div className="flex  ">
+        {/* Barra lateral fija */}
         <NavBarClient />
-        <div className="flex-1 p-6">  
+
+        {/* Contenido principal */}
+        <div className="flex p-10 md:ml-64">
           <Outlet />
         </div>
       </div>
-      <Footer /> 
-       Página de Login
+
       
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
