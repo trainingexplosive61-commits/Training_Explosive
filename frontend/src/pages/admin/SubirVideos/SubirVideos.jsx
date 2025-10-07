@@ -9,8 +9,8 @@ function SubirVideos() {
   const opciones = {
     "Tren Superior": ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps"],
     "Tren Inferior": ["Cuádriceps", "Femoral", "Glúteos", "Pantorrillas"],
-    "Funcional": ["Movilidad", "Resistencia", "Potencia"],
-    "Abdomen": [
+    Funcional: ["Movilidad", "Resistencia", "Potencia"],
+    Abdomen: [
       "Abdominales Superiores",
       "Abdominales Inferiores",
       "Oblicuos",
@@ -18,7 +18,7 @@ function SubirVideos() {
     ],
   };
 
-  // Función para subir video a Cloudinary
+  // 🔹 Subir video a Cloudinary (con tu nueva cuenta)
   const handleUploadVideo = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -28,12 +28,12 @@ function SubirVideos() {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", "video_unsigned"); // tu preset sin firmar
-    formData.append("resource_type", "video");
+    formData.append("upload_preset", "video_ejercicio"); // tu nuevo preset
+    // No incluir claves API ni secretos
 
     try {
       const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dz8vfcha2/video/upload", // tu cloud name aquí
+        "https://api.cloudinary.com/v1_1/dshkhusxd/video/upload", // tu cloud name actualizado
         {
           method: "POST",
           body: formData,
@@ -41,10 +41,11 @@ function SubirVideos() {
       );
 
       const data = await res.json();
+
       if (data.secure_url) {
         setVideoUrl(data.secure_url);
       } else {
-        alert("Error al subir el video.");
+        alert("❌ Error al subir el video. Verifica tu preset o Cloud Name.");
       }
     } catch (error) {
       console.error("Error al subir el video:", error);
@@ -54,22 +55,24 @@ function SubirVideos() {
     }
   };
 
-  // Simulación de envío final
+  // 🔹 Enviar datos (ejemplo: simula envío al backend)
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!videoUrl) {
       alert("Primero sube un video antes de enviar.");
       return;
     }
 
-    console.log({
-      titulo: e.target[0].value,
-      descripcion: e.target[1].value,
+    const datos = {
+      titulo: e.target.titulo.value,
+      descripcion: e.target.descripcion.value,
       zona,
       parte,
       videoUrl,
-    });
+    };
 
+    console.log("Datos listos para enviar al backend:", datos);
     alert("✅ Video subido y datos listos para enviar al backend.");
   };
 
@@ -86,13 +89,16 @@ function SubirVideos() {
         {/* Título */}
         <input
           type="text"
+          name="titulo"
           placeholder="Título del video"
           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500"
           required
         />
 
+        {/* Descripción */}
         <input
           type="text"
+          name="descripcion"
           placeholder="Descripción del video"
           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500"
           required
@@ -107,22 +113,28 @@ function SubirVideos() {
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
-          {loading && <p className="text-blue-500 mt-2">Subiendo video...</p>}
+          {loading && (
+            <p className="text-blue-500 mt-2 animate-pulse">Subiendo video...</p>
+          )}
+
           {videoUrl && (
             <div className="mt-3">
-              <p className="text-green-600">✅ Video subido correctamente</p>
+              <p className="text-green-600 font-semibold">
+                ✅ Video subido correctamente
+              </p>
               <video
                 src={videoUrl}
-                width="100%"
-                height="240"
                 controls
-                className="rounded-lg mt-2"
+                className="rounded-lg mt-2 w-full shadow"
               ></video>
+              <p className="text-gray-500 text-sm mt-2 break-all">
+                URL: {videoUrl}
+              </p>
             </div>
           )}
         </div>
 
-        {/* Selección de zona */}
+        {/* Zona */}
         <select
           value={zona}
           onChange={(e) => {
@@ -140,7 +152,7 @@ function SubirVideos() {
           ))}
         </select>
 
-        {/* Selección de parte específica */}
+        {/* Parte del cuerpo */}
         {zona && (
           <select
             value={parte}
@@ -157,7 +169,7 @@ function SubirVideos() {
           </select>
         )}
 
-        {/* Botón subir */}
+        {/* Botón final */}
         <button
           type="submit"
           className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-500 transition"
