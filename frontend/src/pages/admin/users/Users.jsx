@@ -1,12 +1,34 @@
 import React from "react";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const Users = () => {
   const [crear, setCrear] = React.useState(false);
   const [usuarios, setUsuarios] = React.useState([
-    { id: 1, nombre: "Juan Pérez", correo: "juan@mail.com", estado: "Activo", cargo: "Administrador", diasRestantes: 30, tipo: "Mensualidad" },
-    { id: 2, nombre: "María López", correo: "maria@mail.com", estado: "Inactivo", cargo: "Cliente", diasRestantes: 15, tipo: "Tiketera" },
+    {
+      id: 1,
+      nombre: "Juan Pérez",
+      correo: "juan@mail.com",
+      estado: "Activo",
+      cargo: "Administrador",
+      diasRestantes: 30,
+      tipo: "Mensualidad",
+      peso: "70kg",
+      enfermedades: "Ninguna",
+    },
+    {
+      id: 2,
+      nombre: "María López",
+      correo: "maria@mail.com",
+      estado: "Inactivo",
+      cargo: "Cliente",
+      diasRestantes: 15,
+      tipo: "Tiketera",
+      peso: "62kg",
+      enfermedades: "Asma leve",
+    },
   ]);
-  const [confirmarCambio, setConfirmarCambio] = React.useState(null);
+
   const [nuevoUsuario, setNuevoUsuario] = React.useState({
     nombre: "",
     correo: "",
@@ -15,6 +37,8 @@ const Users = () => {
     contraseña: "",
     tipo: "",
     diasRestantes: 0,
+    peso: "",
+    enfermedades: "",
   });
 
   const handleChange = (e) => {
@@ -26,6 +50,17 @@ const Users = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const id = usuarios.length + 1;
+    setUsuarios([...usuarios, { id, ...nuevoUsuario }]);
+
+    Swal.fire({
+      icon: "success",
+      title: "Usuario creado",
+      text: "El usuario se ha registrado correctamente.",
+      confirmButtonColor: "#16a34a",
+    });
+
     setCrear(false);
     setNuevoUsuario({
       nombre: "",
@@ -35,22 +70,59 @@ const Users = () => {
       contraseña: "",
       tipo: "",
       diasRestantes: 0,
+      peso: "",
+      enfermedades: "",
     });
   };
 
-  const pedirConfirmacion = (usuario, nuevoEstado) => {
-    setConfirmarCambio({ usuario, nuevoEstado });
+  const cambiarEstado = (usuario) => {
+    const nuevoEstado = usuario.estado === "Activo" ? "Inactivo" : "Activo";
+
+    Swal.fire({
+      title: `¿Deseas ${nuevoEstado === "Inactivo" ? "inactivar" : "activar"} a ${usuario.nombre}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, confirmar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: nuevoEstado === "Inactivo" ? "#dc2626" : "#16a34a",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setUsuarios(
+          usuarios.map((u) =>
+            u.id === usuario.id ? { ...u, estado: nuevoEstado } : u
+          )
+        );
+        Swal.fire({
+          icon: "success",
+          title: `Usuario ${nuevoEstado}`,
+          text: `${usuario.nombre} ahora está ${nuevoEstado}.`,
+          confirmButtonColor: "#16a34a",
+        });
+      }
+    });
   };
 
-  const confirmarEstado = () => {
-    setUsuarios(
-      usuarios.map((u) =>
-        u.id === confirmarCambio.usuario.id
-          ? { ...u, estado: confirmarCambio.nuevoEstado }
-          : u
-      )
-    );
-    setConfirmarCambio(null);
+  const eliminarUsuario = (id) => {
+    const usuario = usuarios.find((u) => u.id === id);
+    Swal.fire({
+      title: `¿Eliminar a ${usuario.nombre}?`,
+      text: "Esta acción no se puede deshacer.",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setUsuarios(usuarios.filter((u) => u.id !== id));
+        Swal.fire({
+          icon: "success",
+          title: "Eliminado",
+          text: "El usuario fue eliminado correctamente.",
+          confirmButtonColor: "#16a34a",
+        });
+      }
+    });
   };
 
   return (
@@ -68,9 +140,9 @@ const Users = () => {
         </button>
       </div>
 
-      {/* 🔹 Modal crear usuario (responsive) */}
+      {/* 🔹 Modal crear usuario */}
       {crear && (
-        <div className="fixed inset-0  bg-opacity-60 flex justify-center items-center z-50 px-4">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 px-4">
           <form
             className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg space-y-3"
             onSubmit={handleSubmit}
@@ -116,6 +188,22 @@ const Users = () => {
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
                 required
               />
+              <input
+                type="text"
+                name="peso"
+                placeholder="Peso (ej: 70kg)"
+                value={nuevoUsuario.peso}
+                onChange={handleChange}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
+              />
+              <input
+                type="text"
+                name="enfermedades"
+                placeholder="Enfermedades (si tiene)"
+                value={nuevoUsuario.enfermedades}
+                onChange={handleChange}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500"
+              />
               <select
                 name="tipo"
                 value={nuevoUsuario.tipo}
@@ -158,40 +246,9 @@ const Users = () => {
         </div>
       )}
 
-      {/* 🔹 Modal de confirmación (también responsivo) */}
-      {confirmarCambio && (
-        <div className="fixed inset-0  bg-opacity-60 flex justify-center items-center z-50 px-4">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm sm:max-w-md text-center">
-            <h3 className="text-lg font-semibold mb-4">
-              {confirmarCambio.nuevoEstado === "Inactivo"
-                ? `¿Deseas inactivar a ${confirmarCambio.usuario.nombre}?`
-                : `¿Deseas activar a ${confirmarCambio.usuario.nombre}?`}
-            </h3>
-            <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <button
-                className={`px-4 py-2 rounded text-white ${
-                  confirmarCambio.nuevoEstado === "Inactivo"
-                    ? "bg-red-600"
-                    : "bg-green-600"
-                }`}
-                onClick={confirmarEstado}
-              >
-                Confirmar
-              </button>
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setConfirmarCambio(null)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 🔹 Tabla (scroll horizontal en móvil) */}
+      {/* 🔹 Tabla */}
       <div className="overflow-x-auto">
-        <table className="w-full bg-white rounded shadow min-w-[600px]">
+        <table className="w-full bg-white rounded shadow min-w-[800px]">
           <thead>
             <tr className="bg-gray-200 text-left">
               <th className="p-2">ID</th>
@@ -201,7 +258,9 @@ const Users = () => {
               <th className="p-2">Cargo</th>
               <th className="p-2">Tipo</th>
               <th className="p-2">Días</th>
-              <th className="p-2">Acciones</th>
+              <th className="p-2">Peso</th>
+              <th className="p-2">Enfermedades</th>
+              <th className="p-2 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -214,22 +273,25 @@ const Users = () => {
                 <td className="p-2">{u.cargo}</td>
                 <td className="p-2">{u.tipo}</td>
                 <td className="p-2">{u.diasRestantes}</td>
-                <td className="p-2">
-                  {u.estado === "Activo" ? (
-                    <button
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500 text-sm"
-                      onClick={() => pedirConfirmacion(u, "Inactivo")}
-                    >
-                      Inactivar
-                    </button>
-                  ) : (
-                    <button
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500 text-sm"
-                      onClick={() => pedirConfirmacion(u, "Activo")}
-                    >
-                      Activar
-                    </button>
-                  )}
+                <td className="p-2">{u.peso}</td>
+                <td className="p-2">{u.enfermedades || "Ninguna"}</td>
+                <td className="p-2 flex flex-col sm:flex-row gap-2 justify-center">
+                  <button
+                    className={`text-white px-3 py-1 rounded text-sm ${
+                      u.estado === "Activo"
+                        ? "bg-red-600 hover:bg-red-500"
+                        : "bg-green-600 hover:bg-green-500"
+                    }`}
+                    onClick={() => cambiarEstado(u)}
+                  >
+                    {u.estado === "Activo" ? "Inactivar" : "Activar"}
+                  </button>
+                  <button
+                    className="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 text-sm"
+                    onClick={() => eliminarUsuario(u.id)}
+                  >
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}

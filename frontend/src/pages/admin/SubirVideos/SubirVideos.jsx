@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2"; // ✅ Importar SweetAlert2
 
 function SubirVideos() {
   const [zona, setZona] = useState("");
@@ -6,19 +7,15 @@ function SubirVideos() {
   const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ Opciones actualizadas según tus indicaciones
   const opciones = {
-    "Tren Superior": ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps"],
-    "Tren Inferior": ["Cuádriceps", "Femoral", "Glúteos", "Pantorrillas"],
-    Funcional: ["Movilidad", "Resistencia", "Potencia"],
-    Abdomen: [
-      "Abdominales Superiores",
-      "Abdominales Inferiores",
-      "Oblicuos",
-      "Core",
-    ],
+    "Tren Superior": ["Pecho", "Espalda", "Bíceps", "Tríceps", "Hombros", "Antebrazos"],
+    "Tren Inferior": ["Cuádriceps", "Femoral", "Glúteos", "Pantorrillas", "Abductores"],
+    Funcional: [], // No muestra partes
+    Abdomen: [],   // No muestra partes
   };
 
-  // 🔹 Subir video a Cloudinary (con tu nueva cuenta)
+  // 🔹 Subir video a Cloudinary
   const handleUploadVideo = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -29,11 +26,10 @@ function SubirVideos() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "video_ejercicio"); // tu nuevo preset
-    // No incluir claves API ni secretos
 
     try {
       const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dshkhusxd/video/upload", // tu cloud name actualizado
+        "https://api.cloudinary.com/v1_1/dshkhusxd/video/upload",
         {
           method: "POST",
           body: formData,
@@ -44,23 +40,44 @@ function SubirVideos() {
 
       if (data.secure_url) {
         setVideoUrl(data.secure_url);
+        Swal.fire({
+          icon: "success",
+          title: "¡Video subido!",
+          text: "El video se cargó correctamente.",
+          confirmButtonColor: "#d33",
+        });
       } else {
-        alert("❌ Error al subir el video. Verifica tu preset o Cloud Name.");
+        Swal.fire({
+          icon: "error",
+          title: "Error al subir el video",
+          text: "Verifica tu preset o Cloud Name.",
+          confirmButtonColor: "#d33",
+        });
       }
     } catch (error) {
       console.error("Error al subir el video:", error);
-      alert("Ocurrió un error al subir el video.");
+      Swal.fire({
+        icon: "error",
+        title: "Ocurrió un error",
+        text: "No se pudo subir el video.",
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Enviar datos (ejemplo: simula envío al backend)
+  // 🔹 Enviar datos
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!videoUrl) {
-      alert("Primero sube un video antes de enviar.");
+      Swal.fire({
+        icon: "warning",
+        title: "Sube un video primero",
+        text: "Debes cargar un video antes de enviar los datos.",
+        confirmButtonColor: "#f59e0b",
+      });
       return;
     }
 
@@ -68,12 +85,18 @@ function SubirVideos() {
       titulo: e.target.titulo.value,
       descripcion: e.target.descripcion.value,
       zona,
-      parte,
+      parte: opciones[zona].length > 0 ? parte : null, // si no tiene partes, enviar null
       videoUrl,
     };
 
     console.log("Datos listos para enviar al backend:", datos);
-    alert("✅ Video subido y datos listos para enviar al backend.");
+
+    Swal.fire({
+      icon: "success",
+      title: "Datos listos para enviar",
+      text: "El video y la información están listos para el backend.",
+      confirmButtonColor: "#16a34a",
+    });
   };
 
   return (
@@ -153,7 +176,8 @@ function SubirVideos() {
         </select>
 
         {/* Parte del cuerpo */}
-        {zona && (
+        {/* ✅ Solo se muestra si la zona tiene partes */}
+        {zona && opciones[zona].length > 0 && (
           <select
             value={parte}
             onChange={(e) => setParte(e.target.value)}
